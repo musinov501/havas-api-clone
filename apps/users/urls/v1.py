@@ -2,18 +2,21 @@ from django.conf import settings
 from django.urls import path
 from django.conf.urls.static import static
 
-from apps.users.views.register_user import (
-    RegisterAPIView,
-    LoginAPIView,
-    )
-from apps.users.views.device_creation import DeviceListAPIView
+from apps.users.views.device import DeviceRegisterCreateAPIView, DeviceListApiView
+from apps.users.views.user import UserRegisterAPIView, UserLoginAPIView
+
+app_name = 'users'
 
 urlpatterns = [
-    path('register/', RegisterAPIView.as_view(), name='user-register'),
-    path('login/', LoginAPIView.as_view(), name='user-login'),
+    path('devices/', DeviceRegisterCreateAPIView.as_view(), name='device-register'),
+    path('devices/list/', DeviceListApiView.as_view(), name='device-list'),
     
-    path('devices/', DeviceListAPIView.as_view(), name='device-list'),
+    path('register/', UserRegisterAPIView.as_view(), name='user-register'),
+    path('login/', UserLoginAPIView.as_view(), name='user-login'),
+    
+    
 ]
+
 
 
 
