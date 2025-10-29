@@ -39,7 +39,7 @@ from rest_framework import serializers
 from apps.users.models.device import Device
 
 class DeviceListSerializer(serializers.ModelSerializer):
-    app_version = serializers.StringRelatedField()  # just show version as string
+    app_version = serializers.StringRelatedField() 
 
     class Meta:
         model = Device

@@ -1,4 +1,4 @@
-# apps/users/serializers/user.py
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from apps.users.models.device import Device

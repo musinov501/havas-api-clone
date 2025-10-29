@@ -37,19 +37,18 @@ class AppVersion(BaseModel):
         return self.version
 
     def clean(self):
-        """Validate app version rules"""
+        
         # Rule: force_update can only be True if is_active is True
         if self.force_update and not self.is_active:
             raise CustomException(message_key="FORCE_UPDATE_REQUIRES_ACTIVE")
 
     @transaction.atomic
     def save(self, *args, **kwargs):
-        """Override save to run validation and auto-deactivate old versions"""
-        # First validate basic rules
+        
+    
         self.clean()
 
-        # If this version is being set as active, deactivate all other active versions
-        # for the same device type BEFORE checking for conflicts
+       
         if self.is_active:
             AppVersion.objects.filter(
                 device_type=self.device_type,
@@ -65,10 +64,7 @@ class AppVersion(BaseModel):
 
 
 class Device(BaseModel):
-    """
-    Model to track user devices and manage per-device sessions.
-    """
-    # Device Information
+  
     device_model = models.CharField(max_length=255, db_index=True)
     operation_version = models.CharField(max_length=155)
     device_type = models.CharField(
@@ -95,7 +91,7 @@ class Device(BaseModel):
         help_text="Geographic location data"
     )
 
-    # User Preferences
+  
     language = models.CharField(
         max_length=3,
         choices=Language.choices,
@@ -122,13 +118,7 @@ class Device(BaseModel):
         verbose_name="Biometric Authentication Enabled"
     )
 
-    # # Session Management - Critical for per-device logout
-    # refresh_token_jti = models.CharField(
-    #     max_length=255,
-    #     unique=True,
-    #     db_index=True,
-    #     help_text="JWT refresh token JTI (JWT ID) for this device session"
-    # )
+    #Token Management
     device_token = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True)
     logged_out_at = models.DateTimeField(
         null=True,
