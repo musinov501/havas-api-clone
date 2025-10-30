@@ -282,26 +282,3 @@ class CustomResponse:
             status_code=403,
             **kwargs
         )
-
-from rest_framework.response import Response
-from rest_framework import status
-
-
-class CustomResponse:
-
-    @staticmethod
-    def success(message_key="SUCCESS", data=None, status_code=status.HTTP_200_OK, request=None):
-        return Response({
-            "id": message_key,
-            "message": "Success",
-            "data": data or {}
-        }, status=status_code)
-
-    @staticmethod
-    def error(message_key="UNKNOWN_ERROR", message="An unexpected error occurred",
-               status_code=status.HTTP_400_BAD_REQUEST, data=None, request=None):
-        return Response({
-            "id": message_key,
-            "message": message,
-            "data": data or {}
-        }, status=status_code)

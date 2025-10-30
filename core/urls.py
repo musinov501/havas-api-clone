@@ -16,9 +16,38 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView # type: ignore
+from apps.shared.utils.decorators import superuser_required
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('apps.urls.v1')),
     path('api/v1/', include('apps.urls.v2')),
 ]
+
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# swagger and redoc settings
+schema_view = SpectacularSwaggerView.as_view(url_name='schema')
+redoc_view = SpectacularRedocView.as_view(url_name='schema')
+
+urlpatterns += [
+    path("schema/", SpectacularAPIView.as_view(), name="schema"),
+]
+
+if settings.DEBUG:
+    # Open docs for everyone in dev
+    urlpatterns += [
+        path("api/v1/docs/", schema_view, name="swagger-ui"),
+        path("api/v1/redoc/", redoc_view, name="redoc"),
+    ]
+else:
+    # Require superuser login in prod
+    urlpatterns += [
+        path("api/v1/docs/", superuser_required(schema_view), name="swagger-ui"),
+        path("api/v1/redoc/", superuser_required(redoc_view), name="redoc"),
+    ]
