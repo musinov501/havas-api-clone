@@ -7,6 +7,8 @@ from apps.users.models.device import Device
 import os
 from time import timezone
 
+
+
 class TestStoryCreateList(APITestCase):
     def setUp(self):
         self.url = reverse_lazy('stories:story-list-create')
@@ -34,6 +36,22 @@ class TestStoryCreateList(APITestCase):
         self.assertEqual(response.data['data']['title'], self.payload['title'])
         
         
+    def test_list_stories(self):
+        Story.objects.create(
+            image = self.payload['image'],
+            title = self.payload['title'],
+            description = self.payload['description'],
+            story_type = self.payload['story_type'],
+            start_date = self.payload['statr_date'],
+            end_date = self.payload['end_date'],
+            is_active = self.payload['is_active']
+                )
+        response = self.client.get(path=self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 1)
+        
+            
+        
     def test_create_story_missing_fields(self):
         invalid_payload = self.payload.copy()
         invalid_payload.pop('title')
@@ -42,13 +60,22 @@ class TestStoryCreateList(APITestCase):
         self.assertIn('title', response.data['errors'])
     
     def test_invalid_story_type(self):
-        pass
+        invalid_payload = self.payload.copy()
+        invalid_payload['story_type'] = 'invalid_type'
+        response = self.client.post(path=self.url, data=invalid_payload, format='multipart')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('story_type', response.data['errors'])
     
     def test_invalid_date_range(self):
         pass
     
     def test_create_story_with_product(self):
         pass
+    
+    def test_create_story_with_survey(self):
+        pass
+    
+    
     
     
 
