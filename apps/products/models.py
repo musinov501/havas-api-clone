@@ -1,50 +1,45 @@
+from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from apps.shared.models import BaseModel
 
 
-class Measurement(models.TextChoices):
+class MeasurementType(models.TextChoices):
     GR = "GR", "Gram"
-    PT = "PT", "Piece",
-    L = "L" , "Litre"
-    
-    
-    
+    PC = "PC", "Peace"
+    L = "L", "Litre"
+
+
 class ProductCategory(models.TextChoices):
     BREAKFAST = "BREAKFAST", "Breakfast"
     LUNCH = "LUNCH", "Lunch"
-    DINNER = "DINNER" , "Dinner"
-    ALL = "ALL", "All Meals"
-    
-
+    DINNER = "DINNER", "Dinner"
+    ALL = "ALL", "All"
 
 
 class Product(BaseModel):
-    image = models.ImageField(upload_to='products/')
+    media_files = GenericRelation(
+        'shared.Media',
+        related_query_name='products'
+    )
     title = models.CharField(max_length=255, db_index=True)
-    
     description = models.TextField()
-    
-    price = models.DecimalField(max_digits=30, decimal_places=2)
+
     discount = models.PositiveSmallIntegerField(default=0)
+    price = models.DecimalField(max_digits=30, decimal_places=2)
     real_price = models.DecimalField(max_digits=30, decimal_places=2)
-    
+
     category = models.CharField(
-        choices=ProductCategory, 
-        default=ProductCategory.ALL,
+        choices=ProductCategory, default=ProductCategory.ALL,
         db_index=True
-        )
+    )
     measurement_type = models.CharField(
-        choices=Measurement, 
-        default=Measurement.GR
-        )
-    
+        choices=MeasurementType, default=MeasurementType.GR
+    )
     is_active = models.BooleanField(default=True)
-    
+
     def __str__(self):
         return self.title
-    
+
     class Meta:
-        verbose_name = "Product"
-        verbose_name_plural = "Products"
-         
-    
+        verbose_name = 'product'
+        verbose_name_plural = 'products'

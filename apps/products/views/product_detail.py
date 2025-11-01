@@ -1,12 +1,13 @@
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import AllowAny
+# from rest_framework.permissions import AllowAny
 from apps.products.serializers.product_list_create import ProductListSerializer
 from apps.shared.utils.custom_response import CustomResponse
 from apps.products.models import Product
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
 class ProductRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
-      permission_classes = [AllowAny]
+      permission_classes = [IsAuthenticated]
       serializer_class = ProductListSerializer
       lookup_field = 'pk'
       
