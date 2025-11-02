@@ -45,3 +45,4 @@ class ProductListCreateAPIView(ListCreateAPIView):
             data=serializer.data,
             status_code=status.HTTP_200_OK
         )
+        
