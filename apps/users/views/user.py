@@ -42,11 +42,11 @@ class UserLoginAPIView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         return CustomResponse.success(
-            message_key="USER_LOGGED_IN",
+            message_key="SUCCESS_MESSAGE",
             data={
                 "user_id": user.id,
                 "username": user.username,
                 "email": user.email,
-                "devices": [DeviceRegisterSerializer(d).data for d in user.devices.all()]
+                "devices": DeviceListSerializer(user.devices.all(), many=True).data
             }
         )

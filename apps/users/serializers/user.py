@@ -36,8 +36,13 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        user = authenticate(username=data['username'], password=data['password'])
-        if not user:
-            raise serializers.ValidationError("Invalid credentials")
+        try:
+            user = User.objects.get(username=data['username'])
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid username or password")
+
+        if not user.check_password(data['password']):
+            raise serializers.ValidationError("Invalid username or password")
+
         data['user'] = user
         return data

@@ -3,7 +3,12 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from apps.products.models import Product
-from apps.products.serializers.product_list_create import ProductCreateSerializer, ProductDetailSerializer
+from apps.products.serializers.product_list_create import (
+    ProductCreateSerializer,
+    ProductDetailSerializer,
+    ProductListSerializer
+)
+from apps.shared.permissions.mobile import IsMobileOrWebUser
 from apps.shared.utils.custom_pagination import CustomPageNumberPagination
 from apps.shared.utils.custom_response import CustomResponse
 
@@ -11,13 +16,27 @@ from apps.shared.utils.custom_response import CustomResponse
 class ProductListCreateAPIView(ListCreateAPIView):
     serializer_class = ProductCreateSerializer
     pagination_class = CustomPageNumberPagination
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsMobileOrWebUser]
 
     def get_queryset(self):
         return Product.objects.filter(is_active=True)
 
+    def get_serializer_class(self):
+        """Return appropriate serializer based on request type (WEB or MOBILE)."""
+        if self.request.method == 'POST':
+            return ProductCreateSerializer
+
+        # For GET requests
+        device_type = getattr(self.request, "device_type", "WEB")
+        if device_type == "WEB":
+            # Web users: return full _en and _uz fields
+            return ProductListSerializer
+        else:
+            # Mobile users: return language-specific fields only
+            return ProductDetailSerializer
+
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             product = serializer.save()
             response_serializer = ProductDetailSerializer(product, context={'request': request})
@@ -31,18 +50,18 @@ class ProductListCreateAPIView(ListCreateAPIView):
                 message_key="VALIDATION_ERROR",
                 errors=serializer.errors
             )
-    
+
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
+        
         if page is not None:
-            serializer = ProductDetailSerializer(page, many=True, context={'request': request})
+            serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
-        serializer = ProductDetailSerializer(queryset, many=True, context={'request': request})
+        serializer = self.get_serializer(queryset, many=True)
         return CustomResponse.success(
             message_key="SUCCESS_MESSAGE",
             data=serializer.data,
             status_code=status.HTTP_200_OK
         )
-        

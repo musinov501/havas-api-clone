@@ -2,7 +2,7 @@ from typing import Any
 
 from rest_framework import generics, permissions, status
 from rest_framework.pagination import PageNumberPagination
-from apps.shared.permissions.mobile import IsMobileUser
+from apps.shared.permissions.mobile import IsMobileOrWebUser
 from apps.shared.utils.custom_response import CustomResponse
 from apps.users.models.device import Device
 from apps.users.serializers.device import DeviceListSerializer, DeviceRegisterSerializer
@@ -22,7 +22,7 @@ class DeviceRegisterCreateAPIView(generics.CreateAPIView):
         self.device = device
 
     def create(self, request, *args, **kwargs):
-        try:
+        
             response = super().create(request, *args, **kwargs)
             response.data['device_token'] = str(self.device.device_token)
             return CustomResponse.success(
@@ -30,13 +30,7 @@ class DeviceRegisterCreateAPIView(generics.CreateAPIView):
                 data=response.data,
                 status_code=status.HTTP_201_CREATED
             )
-        except Exception as e:
-            import traceback
-            print("🔥 DEVICE CREATE ERROR:", traceback.format_exc())
-            return CustomResponse.error(
-                message_key="UNKNOWN_ERROR",
-                message=str(e)
-            )
+        
 
 
 
@@ -45,7 +39,7 @@ class DeviceRegisterCreateAPIView(generics.CreateAPIView):
 
 class DeviceListApiView(generics.ListAPIView):
     serializer_class = DeviceListSerializer
-    permission_classes = [IsMobileUser]  
+    permission_classes = [IsMobileOrWebUser]  
     pagination_class = PageNumberPagination
     
     def get_queryset(self):
