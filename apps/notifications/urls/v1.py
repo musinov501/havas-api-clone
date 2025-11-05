@@ -1,16 +1,14 @@
+from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.urls import path
 from django.conf.urls.static import static
-from apps.products.views.product_list_create import ProductListCreateAPIView
-from apps.products.views.product_detail import ProductRetrieveUpdateDestroyAPIView
-
+from apps.notifications.views.create_list import NotificationViewSet
 app_name = 'notifications'
 
-urlpatterns = [
-    
-]
+router = DefaultRouter()
+router.register(r'', NotificationViewSet, basename='notifications')
 
-
+urlpatterns = router.urls
 
 
 

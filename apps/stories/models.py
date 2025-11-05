@@ -26,6 +26,10 @@ class Story(BaseModel):
     def __str__(self):
         return self.title
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.media_files = {}
+    
     
 class Survey(BaseModel):
     story = models.OneToOneField(Story, on_delete=models.CASCADE, related_name='survey')
