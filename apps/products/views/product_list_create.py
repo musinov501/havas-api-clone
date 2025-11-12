@@ -22,17 +22,17 @@ class ProductListCreateAPIView(ListCreateAPIView):
         return Product.objects.filter(is_active=True)
 
     def get_serializer_class(self):
-        """Return appropriate serializer based on request type (WEB or MOBILE)."""
+        
         if self.request.method == 'POST':
             return ProductCreateSerializer
 
-        # For GET requests
+      
         device_type = getattr(self.request, "device_type", "WEB")
         if device_type == "WEB":
-            # Web users: return full _en and _uz fields
+           
             return ProductListSerializer
         else:
-            # Mobile users: return language-specific fields only
+          
             return ProductDetailSerializer
 
     def create(self, request, *args, **kwargs):

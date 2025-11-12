@@ -35,4 +35,4 @@ class Notification(BaseModel):
         ordering = ['-created_at']
         
         def __str__(self):
-            return f"{self.title} -> {self.recipient or "All users"}"
+            return f"{self.title} -> {self.recipient}"

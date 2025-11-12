@@ -50,3 +50,6 @@ class UserLoginAPIView(generics.GenericAPIView):
                 "devices": DeviceListSerializer(user.devices.all(), many=True).data
             }
         )
+
+
+        

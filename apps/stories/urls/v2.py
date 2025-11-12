@@ -1,6 +1,6 @@
-# apps/urls/v2.py
-from django.urls import path
+# # apps/urls/v2.py
+# from django.urls import path
 
-urlpatterns = [
+# urlpatterns = [
     
-]
+# ]

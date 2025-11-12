@@ -49,3 +49,8 @@ class DeviceListSerializer(serializers.ModelSerializer):
             'language', 'theme', 'created_at'
         ]
         read_only_fields = fields
+
+    
+
+
+

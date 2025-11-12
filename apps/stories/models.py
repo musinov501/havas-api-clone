@@ -4,6 +4,8 @@ from apps.products.models import Product
 from apps.users.models.device import Device
 from apps.users.models.user import User
 
+
+
 class Story(BaseModel):
     STORY_TYPES = (
         ('promo', 'Promotional'),
@@ -12,7 +14,7 @@ class Story(BaseModel):
     
     title = models.CharField(max_length=255)
     description = models.TextField()
-    image = models.ImageField(upload_to='stories/')
+    
     story_type = models.CharField(max_length=20, choices=STORY_TYPES)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
@@ -26,10 +28,14 @@ class Story(BaseModel):
     def __str__(self):
         return self.title
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.media_files = {}
-    
+    @property
+    def media_files(self):
+        """Return related media files."""
+        from django.contrib.contenttypes.models import ContentType
+        from apps.shared.models import Media
+        
+        content_type = ContentType.objects.get_for_model(self)
+        return Media.objects.filter(content_type=content_type, object_id=self.pk)
     
 class Survey(BaseModel):
     story = models.OneToOneField(Story, on_delete=models.CASCADE, related_name='survey')

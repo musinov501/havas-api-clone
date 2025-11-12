@@ -4,8 +4,6 @@ from rest_framework import serializers
 
 
 class TranslatedFieldsWriteMixin:
-    """Handles CREATE/UPDATE for translated text & media fields."""
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.languages = settings.LANGUAGES
@@ -102,7 +100,7 @@ class TranslatedFieldsWriteMixin:
                         object_id=instance.pk,
                         file=file_obj,
                         media_type="image",
-                        original_filename=file_obj.name,
+                        original_filename=getattr(file_obj, "name", None),
                         uploaded_by=user,
                         language=language,
                         is_public=True,
@@ -110,7 +108,7 @@ class TranslatedFieldsWriteMixin:
 
 
 class TranslatedFieldsReadMixin:
-    """Handle representation for web vs mobile devices."""
+    """Handle representation for web vs mobile devices with fallbacks."""
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -119,7 +117,7 @@ class TranslatedFieldsReadMixin:
         media_fields = getattr(self, "media_fields", [])
         request = self.context.get("request")
 
-        device_type = getattr(request, "device_type", "WEB")  # default web
+        device_type = getattr(request, "device_type", "WEB") 
         lang = getattr(request, "lang", None)
 
         for field_name in translatable_fields:
@@ -138,31 +136,71 @@ class TranslatedFieldsReadMixin:
             else:
                 # Text fields handling
                 if device_type == "MOBILE" and lang:
-                    # Only show requested language
-                    data[field_name] = getattr(instance, f"{field_name}_{lang}", "")
+                    # Prefer language-specific attribute, fall back to base field
+                    value = None
+                    # try model attribute first
+                    value = getattr(instance, f"{field_name}_{lang}", None)
+                    if value in (None, ""):
+                        value = getattr(instance, field_name, "")
+                    data[field_name] = value or ""
                     # remove any _en/_uz etc fields if present
                     for lc, _ in settings.LANGUAGES:
                         key = f"{field_name}_{lc.lower()}"
                         data.pop(key, None)
                 else:
-                    # Web → show all languages
+                    # Web → show all languages; if per-lang attr missing, show base field as fallback
                     for lc, _ in settings.LANGUAGES:
-                        data[f"{field_name}_{lc.lower()}"] = getattr(
-                            instance, f"{field_name}_{lc.lower()}", ""
-                        )
+                        per_attr = getattr(instance, f"{field_name}_{lc.lower()}", None)
+                        if per_attr in (None, ""):
+                            per_attr = getattr(instance, field_name, "")
+                        data[f"{field_name}_{lc.lower()}"] = per_attr or ""
                     data.pop(field_name, None)
 
         return data
 
     def _get_media(self, instance, field_name, language):
-        """Return list of media dicts filtered by language."""
-        qs = instance.media_files.filter(language__iexact=language)
-        return [
-            {
-                "id": str(m.id),
-                "url": m.file.url if m.file else None,
-                "filename": m.original_filename,
-                "language": m.language,
-            }
-            for m in qs
-        ]
+        """Return list of media dicts filtered by language.
+
+        Supports:
+         - model related manager `media_files` (preferred),
+         - a FileField/ImageField on the instance (e.g., instance.image),
+         - serialized dicts (instance may be a dict).
+        """
+        # 1) If instance has a related manager media_files, use it
+        qs_or_list = []
+
+        if hasattr(instance, "media_files") and hasattr(getattr(instance, "media_files"), "filter"):
+            try:
+                qs_or_list = instance.media_files.filter(language__iexact=language)
+            except Exception:
+                qs_or_list = []
+        else:
+            # 2) If instance is a dict (serialized) and contains media under common keys
+            if isinstance(instance, dict):
+                candidate = instance.get("media_files") or instance.get(field_name) or []
+                # candidate might be a list of dicts
+                qs_or_list = candidate
+            else:
+                # 3) If the model has a FileField/ImageField named field_name, return it (single file)
+                file_attr = getattr(instance, field_name, None)
+                if file_attr:
+                    # file_attr might be a FieldFile object; return it as a single-item list
+                    qs_or_list = [file_attr]
+
+        result = []
+        for m in qs_or_list:
+            if isinstance(m, dict):
+                file_url = m.get("file") or m.get("url") or None
+                filename = m.get("original_filename") or m.get("filename") or None
+                lang = m.get("language")
+                id_ = str(m.get("id")) if m.get("id") else None
+                result.append({"id": id_, "url": file_url, "filename": filename, "language": lang})
+            else:
+                # m might be a FieldFile or a model instance of Media
+                # If it's a FieldFile (has url), map it
+                url = getattr(getattr(m, "file", m), "url", None)
+                filename = getattr(m, "original_filename", None) or getattr(m, "name", None)
+                lang = getattr(m, "language", None)
+                id_ = str(getattr(m, "id", None)) if getattr(m, "id", None) is not None else None
+                result.append({"id": id_, "url": url, "filename": filename, "language": lang})
+        return result

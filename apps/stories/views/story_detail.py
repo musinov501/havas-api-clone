@@ -1,27 +1,27 @@
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import AllowAny
-from rest_framework import status
+# from rest_framework.generics import RetrieveUpdateDestroyAPIView
+# from rest_framework.permissions import AllowAny
+# from rest_framework import status
 
-from apps.stories.models import Story
-from apps.stories.serializers.story_detail import StoryDetailSerializer
-from apps.shared.utils.custom_response import CustomResponse
+# from apps.stories.models import Story
+# from apps.stories.serializers.story_detail import StoryDetailSerializer
+# from apps.shared.utils.custom_response import CustomResponse
 
 
-class StoryRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [AllowAny]
-    serializer_class = StoryDetailSerializer
-    lookup_field = 'pk'
+# class StoryRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+#     permission_classes = [AllowAny]
+#     serializer_class = StoryDetailSerializer
+#     lookup_field = 'pk'
 
-    # Only active stories
-    def get_queryset(self):
-        return Story.objects.filter(is_active=True)
+#     # Only active stories
+#     def get_queryset(self):
+#         return Story.objects.filter(is_active=True)
 
-    # GET / Retrieve story
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, context={'request': request})
-        return CustomResponse.success(
-            message_key="SUCCESS_MESSAGE",
-            data=serializer.data,
-            status_code=status.HTTP_200_OK
-        )
+#     # GET / Retrieve story
+#     def retrieve(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         serializer = self.get_serializer(instance, context={'request': request})
+#         return CustomResponse.success(
+#             message_key="SUCCESS_MESSAGE",
+#             data=serializer.data,
+#             status_code=status.HTTP_200_OK
+#         )
