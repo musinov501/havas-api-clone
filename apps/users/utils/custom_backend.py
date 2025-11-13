@@ -19,7 +19,8 @@ class MultiFieldBackend(ModelBackend):
                 Q(phone_number=username)
             ).first()
 
-            if user.check_password(password) and user.is_active:
+            # ✅ Make sure user exists before checking password
+            if user and user.check_password(password) and user.is_active:
                 return user
         except User.DoesNotExist:
             pass
