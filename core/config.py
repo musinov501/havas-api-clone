@@ -23,6 +23,10 @@ SECRET_KEY = env('SECRET_KEY', default='unsafe-secret-key')
 DEBUG = env.bool('DEBUG', default=False)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
+MEDIA_ROOT = env('MEDIA_ROOT', default='/vol/web/media/')
+STATIC_ROOT = env('STATIC_ROOT', default='/vol/web/static/')
+
+
 # DATABASE SETTINGS
 DB_NAME = env('DB_NAME')
 DB_USER = env('DB_USER')

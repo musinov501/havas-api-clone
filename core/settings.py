@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from . import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,6 +27,7 @@ SECRET_KEY = 'django-insecure-ni0y=^7f*8^4nc6&6=dl37s%3u&_)ppzj(mloj$5huunvzyy@m
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
 
 
 
@@ -118,10 +120,15 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config.DB_NAME,
+        'USER': config.DB_USER,
+        'PASSWORD': config.DB_PASSWORD,
+        'HOST': config.DB_HOST, 
+        'PORT': config.DB_PORT,
     }
 }
+
 
 
 # Password validation
@@ -163,10 +170,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR.parent.parent / 'media'
+MEDIA_ROOT = config.MEDIA_ROOT
+
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR.parent.parent / 'static'
+STATIC_ROOT = config.STATIC_ROOT
 
 
 # Default primary key field type
